@@ -1,15 +1,13 @@
-// src/Login.js
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
 
 const Login = () => {
-  const Navigate = useNavigate();
-
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
-    username: '',
+    email: '',
     password: ''
   });
-
   const [error, setError] = useState('');
 
   const handleChange = (e) => {
@@ -20,51 +18,38 @@ const Login = () => {
     }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const savedUser = JSON.parse(localStorage.getItem('user'));
+    try {
+      // Send POST request to backend to login the user
+      const response = await axios.post('http://localhost:5000/login', formData);
 
-    // Check if the user exists and the password matches
-    if (!savedUser) {
-      setError('No user found! Please register first.');
-      return;
+      // Store JWT token and user details in localStorage
+      localStorage.setItem('token', response.data.token);
+      localStorage.setItem('user', JSON.stringify(response.data.user));
+
+      // Redirect to the home page after successful login
+      navigate('/home');
+    } catch (err) {
+      setError(err.response?.data?.message || 'Login failed!');
     }
-
-    if (savedUser.username !== formData.username || savedUser.password !== formData.password) {
-      setError('Invalid credentials. Please try again.');
-      return;
-    }
-
-    // Redirect to a protected page (e.g., home/dashboard)
-    Navigate('/home');
   };
 
   return (
-    <div>
+    <div className='d-flex justify-center align-center bg-primary vh-100'>
       <h2>Login</h2>
       <form onSubmit={handleSubmit}>
         <div>
-          <label>Username:</label>
-          <input
-            type="text"
-            name="username"
-            value={formData.username}
-            onChange={handleChange}
-            required
-          />
-        </div>
-        <div> 
           <label>Email:</label>
           <input
-            type="text"
+            type="email"
             name="email"
             value={formData.email}
             onChange={handleChange}
             required
           />
         </div>
-
         <div>
           <label>Password:</label>
           <input

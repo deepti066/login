@@ -1,16 +1,14 @@
-// src/Register.js
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
 
 const Register = () => {
-  const navigate = useNavigate(); // Correctly initialize useNavigate
-
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     username: '',
     email: '',
     password: ''
   });
-
   const [error, setError] = useState('');
 
   const handleChange = (e) => {
@@ -21,24 +19,28 @@ const Register = () => {
     }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Simple validation (in a real app, more validation is needed)
+    // Validation
     if (!formData.username || !formData.email || !formData.password) {
       setError('All fields are required!');
       return;
     }
 
-    // Simulate user registration by saving data to localStorage (in a real app, this would be sent to the server)
-    localStorage.setItem('user', JSON.stringify(formData));
-
-    // Redirect to login page using navigate()
-    navigate('/login'); // This replaces history.push()
+    try {
+      // Send POST request to the backend API to register the user
+      const response = await axios.post('http://localhost:5000/register', formData);
+      console.log('User registered successfully:', response.data);
+      // Redirect to the login page after successful registration
+      navigate('/login');
+    } catch (err) {
+      setError(err.response?.data?.message || 'Registration failed!');
+    }
   };
 
   return (
-    <div>
+    <div className='d-flex justify-center align-center bg-primary vh-100'>
       <h2>Register</h2>
       <form onSubmit={handleSubmit}>
         <div>
